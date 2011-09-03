@@ -19,7 +19,8 @@ Patch1: 	nethack-enh-hpmon.patch
 #
 # Adapted from its Debian version
 Patch2:		nethack-enh-paranoid-hit.patch
-
+#TODO: unfinished
+Patch3:		nethack-3.4.3-makefile-destdir.patch
 BuildRequires:	ncurses-devel bison flex
 
 
@@ -43,6 +44,7 @@ characters: you can pick your race, your role, and your gender.
 %patch0 -p1 -b .settings~
 %patch1 -p1 -b .hpmon~
 %patch2 -p1 -b .paranoid~
+#%patch3 -p1 -b .destdir~
 # Generates makefiles
 (source sys/unix/setup.sh)
 
@@ -53,16 +55,10 @@ perl -pi -e 's{MDV_VAR_PLAYGROUND}{%{_localstatedir}/lib/games/nethack}' include
 %make CFLAGS="%{optflags} -I../include -Wno-error=format-security" LDFLAGS="%{ldflags}"
 
 %install
-%makeinstall \
-        GAMEDIR=%{buildroot}%{_gamesdatadir}/nethack \
-        VARDIR=%{buildroot}%{_localstatedir}/lib/games/nethack \
-        SHELLDIR=%{buildroot}%{_gamesbindir} \
-        CHOWN=/bin/true \
-        CHGRP=/bin/true
-rm -f %{buildroot}%{_gamesbindir}/nethack
-mv %{buildroot}%{_gamesdatadir}/nethack/nethack %{buildroot}%{_gamesbindir}/nethack
-mv %{buildroot}%{_gamesdatadir}/nethack/recover %{buildroot}%{_gamesbindir}/nethack-recover
-install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
+%makeinstall_std \
+        GAMEDIR=%{_gamesdatadir}/nethack \
+        VARDIR=%{_localstatedir}/lib/games/nethack \
+        SHELLDIR=%{_gamesbindir} \
 
 %files
 %{_gamesdatadir}/nethack
@@ -72,6 +68,6 @@ install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
 %attr(2755,root,games) %{_gamesbindir}/nethack
 %defattr(644,root,games,755)
 %dir %{_localstatedir}/lib/games/nethack/
-%attr(664,root,games) %config(noreplace) %{_localstatedir}/lib/games/nethack/record
-%attr(664,root,games) %config(noreplace) %{_localstatedir}/lib/games/nethack/perm
-%attr(664,root,games) %config(noreplace) %{_localstatedir}/lib/games/nethack/logfile
+%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
+%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
+%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
