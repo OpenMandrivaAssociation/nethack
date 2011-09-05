@@ -1,6 +1,6 @@
 Name:		nethack
 Version:	3.4.3
-Release:	1
+Release:	2
 Summary:	A roguelike dungeon exploration game
 
 Group:		Games/Adventure
@@ -65,6 +65,11 @@ rm -f %{buildroot}%{_gamesbindir}/nethack
 mv %{buildroot}%{_gamesdatadir}/nethack/nethack %{buildroot}%{_gamesbindir}/nethack                                                                           
 mv %{buildroot}%{_gamesdatadir}/nethack/recover %{buildroot}%{_gamesbindir}/nethack-recover                                                                   
 install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
+
+%post
+%create_ghostfile %{_localstatedir}/lib/games/nethack/record root games 664
+%create_ghostfile %{_localstatedir}/lib/games/nethack/perm root games 664
+%create_ghostfile %{_localstatedir}/lib/games/nethack/logfile root games 664
 
 %files
 %doc doc/*txt README dat/license
