@@ -1,27 +1,29 @@
-Name:		nethack
-Version:	3.4.3
-Release:	1
-Summary:	A roguelike dungeon exploration game
+Name:           nethack
+Version:        3.4.3
+Release:        %mkrel 1
+Summary:        A roguelike dungeon exploration game
 
-Group:		Games/Adventure
-License:	Nethack GPL
-URL:		http://www.nethack.org
-Source0:	http://downloads.sourceforge.net/%{name}/%{name}-343-src.tgz
+Group:          Games/Adventure
+License:        Nethack GPL
+URL:            http://www.nethack.org
+Source:         http://downloads.sourceforge.net/%{name}/%{name}-343-src.tgz
 # Nethack Linux settings/defines
-Patch0:		nethack-settings.patch
+Patch0:         nethack-settings.patch
 # HP monitor, patch from http://www.netsonic.fi/~walker/nh/hpmon.diff 
 # Some parts adapted from Debian's patch
-Patch1: 	nethack-enh-hpmon.patch
+Patch1: 		nethack-enh-hpmon.patch
 # "Paranoid hit" patch by Joshua Kwan <joshk@triplehelix.org>
 # heavily edited from http://www.netsonic.fi/~walker/nh/paranoid-343.diff
 # originally by  David Damerell, Jonathan Nieder, Jukka Lahtinen, Stanislav
 # Traykov
 #
 # Adapted from its Debian version
-Patch2:		nethack-enh-paranoid-hit.patch
-#TODO: unfinished
-Patch3:		nethack-3.4.3-makefile-destdir.patch
-BuildRequires:	ncurses-devel bison flex
+Patch2:         nethack-enh-paranoid-hit.patch
+
+BuildRoot: 		%{_tmppath}/%{name}-%{version}-%{release}-root
+
+BuildRequires:  ncurses-devel
+BuildRequires:  bison, flex
 
 
 %description
@@ -41,33 +43,40 @@ characters: you can pick your race, your role, and your gender.
 
 %prep
 %setup -q
-%patch0 -p1 -b .settings~
-%patch1 -p1 -b .hpmon~
-%patch2 -p1 -b .paranoid~
-#%patch3 -p1 -b .destdir~
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
 # Generates makefiles
 (source sys/unix/setup.sh)
 
 %build
 # Patch in our paths with RPM macros.
-perl -pi -e 's{MDV_HACKDIR}{%{_gamesdatadir}/nethack}' include/config.h
-perl -pi -e 's{MDV_VAR_PLAYGROUND}{%{_localstatedir}/lib/games/nethack}' include/unixconf.h
-%make CFLAGS="%{optflags} -I../include -Wno-error=format-security" LDFLAGS="%{ldflags}"
+perl -pi -e 's{MDV_HACKDIR}{%{_gamesdatadir}/games/nethack}' include/config.h
+perl -pi -e 's{MDV_VAR_PLAYGROUND}{%{_var}/games/nethack}' include/unixconf.h
+%make
 
 %install
-%makeinstall_std \
-        GAMEDIR=%{_gamesdatadir}/nethack \
-        VARDIR=%{_localstatedir}/lib/games/nethack \
-        SHELLDIR=%{_gamesbindir} \
+rm -rf $RPM_BUILD_ROOT
+%makeinstall \
+        GAMEDIR=$RPM_BUILD_ROOT%{_gamesdatadir}/games/nethack \
+        VARDIR=$RPM_BUILD_ROOT%{_var}/games/nethack \
+        SHELLDIR=$RPM_BUILD_ROOT%{_gamesbindir} \
+        CHOWN=/bin/true \
+        CHGRP=/bin/true
+rm -f $RPM_BUILD_ROOT%{_gamesbindir}/nethack
+mv $RPM_BUILD_ROOT%{_gamesdatadir}/games/nethack/nethack $RPM_BUILD_ROOT%{_gamesbindir}/nethack
+mv $RPM_BUILD_ROOT%{_gamesdatadir}/games/nethack/recover $RPM_BUILD_ROOT%{_gamesbindir}/nethack-recover
+install -D -m644 doc/nethack.6 $RPM_BUILD_ROOT%{_mandir}/man6/nethack.6
+
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %files
-%{_gamesdatadir}/nethack
-%{_mandir}/man6/*
-%defattr(755,root,games)
-%{_gamesbindir}/nethack-recover
-%attr(2755,root,games) %{_gamesbindir}/nethack
-%defattr(644,root,games,755)
-%dir %{_localstatedir}/lib/games/nethack/
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
+%_gamesdatadir/games/nethack
+%_mandir/man6/*
+%attr(0775,root,games) %{_var}/games/nethack
+%attr(2755,root,games) %_gamesbindir/nethack
+%attr(0755,root,games) %_gamesbindir/nethack-recover
+%attr(664,root,games) %config(noreplace) %{_var}/games/nethack/record
+%attr(664,root,games) %config(noreplace) %{_var}/games/nethack/perm
+%attr(664,root,games) %config(noreplace) %{_var}/games/nethack/logfile
