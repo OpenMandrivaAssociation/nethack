@@ -75,6 +75,7 @@ install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
 %attr(2755,root,games) %{_gamesbindir}/nethack
 %defattr(644,root,games,775)
 %dir %{_localstatedir}/lib/games/nethack/
+%dir %{_localstatedir}/lib/games/nethack/save
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
