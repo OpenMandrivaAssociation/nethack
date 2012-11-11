@@ -1,0 +1,141 @@
+#! /bin/sh -e
+## 90_enh_hpmon.dpatch by Ralph Churchill <mrchucho@yahoo.com>
+## from: http://www.netsonic.fi/~walker/nh/hpmon.diff
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Enables color HP monitor for textmode NetHack.
+
+if [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+    -patch) patch -f --no-backup-if-mismatch -p1 < $0;;
+    -unpatch) patch -f --no-backup-if-mismatch -R -p1 < $0;;
+    *)
+        echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+        exit 1;;
+esac
+
+exit 0
+
+--- nethack-3.4.3/src/botl.c	2003-12-08 01:39:13.000000000 +0200
++++ nh343hpm/src/botl.c	2004-07-13 17:19:08.163414760 +0300
+@@ -3,6 +3,11 @@
+ /* NetHack may be freely redistributed.  See license for details. */
+ 
+ #include "hack.h"
++#if defined(HPMON) && defined(TEXTCOLOR)
++# ifndef WINTTY_H
++#  include "wintty.h"
++# endif
++#endif
+ 
+ #ifdef OVL0
+ extern const char *hu_stat[];	/* defined in eat.c */
+@@ -248,6 +253,9 @@
+ 	char  newbot2[MAXCO];
+ 	register char *nb;
+ 	int hp, hpmax;
++#ifdef HPMON
++	int hpcolor, hpattr;
++#endif
+ 	int cap = near_capacity();
+ 
+ 	hp = Upolyd ? u.mh : u.uhp;
+@@ -256,6 +264,15 @@
+ 	if(hp < 0) hp = 0;
+ 	(void) describe_level(newbot2);
+ 	Sprintf(nb = eos(newbot2),
++#ifdef HPMON
++		"%c:%-2ld HP:", oc_syms[COIN_CLASS],
++#ifndef GOLDOBJ
++		u.ugold
++#else
++		money_cnt(invent)
++#endif
++		);
++#else /* HPMON */
+ 		"%c:%-2ld HP:%d(%d) Pw:%d(%d) AC:%-2d", oc_syms[COIN_CLASS],
+ #ifndef GOLDOBJ
+ 		u.ugold,
+@@ -263,6 +280,39 @@
+ 		money_cnt(invent),
+ #endif
+ 		hp, hpmax, u.uen, u.uenmax, u.uac);
++#endif /* HPMON */
++#ifdef HPMON
++	curs(WIN_STATUS, 1, 1);
++	putstr(WIN_STATUS, 0, newbot2);
++
++	Sprintf(nb = eos(newbot2), "%d(%d)", hp, hpmax);
++#ifdef TEXTCOLOR
++	if (iflags.use_color) {
++	  curs(WIN_STATUS, 1, 1);
++	  hpattr = ATR_NONE;
++	  if(hp == hpmax){
++	    hpcolor = NO_COLOR;
++	  } else if(hp > (hpmax*2/3)) {
++	    hpcolor = CLR_GREEN;
++	  } else if(hp <= (hpmax/3)) {
++	    hpcolor = CLR_RED;
++	    if(hp<=(hpmax/10)) 
++	      hpattr = ATR_BLINK;
++	  } else {
++	    hpcolor = CLR_YELLOW;
++	  }
++	  if (hpcolor != NO_COLOR)
++	    term_start_color(hpcolor);
++	  if(hpattr!=ATR_NONE)term_start_attr(hpattr);
++	  putstr(WIN_STATUS, hpattr, newbot2);
++	  if(hpattr!=ATR_NONE)term_end_attr(hpattr);
++	  if (hpcolor != NO_COLOR)
++	    term_end_color();
++	}
++#endif /* TEXTCOLOR */
++	Sprintf(nb = eos(newbot2), " Pw:%d(%d) AC:%-2d",
++		u.uen, u.uenmax, u.uac);
++#endif /* HPMON */
+ 
+ 	if (Upolyd)
+ 		Sprintf(nb = eos(nb), " HD:%d", mons[u.umonnum].mlevel);
+
+--- nethack/src/options.c~	2003-10-12 16:05:42.000000000 -0700
++++ nethack/src/options.c	2003-10-12 16:06:44.000000000 -0700
+@@ -86,6 +86,9 @@
+ #else
+ 	{"extmenu", (boolean *)0, FALSE, SET_IN_FILE},
+ #endif
++#if defined(TEXTCOLOR) && defined(HPMON)
++        { "hpmon", &iflags.use_hpmon, FALSE, SET_IN_GAME},
++#endif
+ #ifdef OPT_DISPMAP
+ 	{"fast_map", &flags.fast_map, TRUE, SET_IN_GAME},
+ #else
+--- nethack/include/flag.h~	2003-10-12 16:04:12.000000000 -0700
++++ nethack/include/flag.h	2003-10-12 16:05:17.000000000 -0700
+@@ -217,6 +217,11 @@
+ 	boolean lan_mail;	/* mail is initialized */
+ 	boolean lan_mail_fetched; /* mail is awaiting display */
+ #endif
++
++#if defined(HPMON) && defined(TEXTCOLOR)
++        boolean use_hpmon;
++#endif
++
+ /*
+  * Window capability support.
+  */
+
+diff --git a/dat/opthelp b/dat/opthelp
+index 4dade58..72fdce5 100644
+--- a/dat/opthelp
++++ b/dat/opthelp
+@@ -15,6 +15,7 @@ extmenu        use a menu for selecting extended commands (#)     [FALSE]
+ fixinv         try to retain the same letter for the same object  [TRUE]
+ help           print all available info when using the / command  [TRUE]
+ IBMgraphics    use IBM extended characters for the dungeon        [FALSE]
++hpmon          enable a HP monitor                                [FALSE]
+ ignintr        ignore interrupt signal, including breaks          [FALSE]
+ legacy         print introductory message                         [TRUE]
+ lit_corridor   show a dark corridor as lit if in sight            [FALSE]
