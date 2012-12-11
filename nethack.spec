@@ -84,3 +84,21 @@ install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
 %ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
+
+
+%changelog
+* Mon Sep 05 2011 Eskild Hustvedt <eskild@mandriva.org> 3.4.3-2
++ Revision: 698365
+- Fixed creation of ghost files
+
+* Mon Sep 05 2011 Eskild Hustvedt <eskild@mandriva.org> 3.4.3-1
++ Revision: 698342
+- Fixed save dir
+- Merged back Per ?\195?\152yvind's fixes
+- Various permission and build fixes. Added docs.
+- imported package nethack
+
+  + Per Øyvind Karlsen <peroyvind@mandriva.org>
+    - more fixes
+    - start on cleaning up and refreshing rusty/obsolete Eskild's packaging skills ;)
+
