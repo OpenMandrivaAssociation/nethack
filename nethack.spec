@@ -1,6 +1,6 @@
 Name:		nethack
 Version:	3.4.3
-Release:	2
+Release:	3
 Summary:	A roguelike dungeon exploration game
 
 Group:		Games/Adventure
