@@ -8,19 +8,19 @@ License:	Nethack GPL
 URL:		http://www.nethack.org
 Source0:	http://downloads.sourceforge.net/%{name}/%{name}-361-src.tgz
 # Nethack Linux settings/defines
-Patch0:		nethack-settings.patch
+#Patch0:		nethack-settings.patch
 # HP monitor, patch from http://www.netsonic.fi/~walker/nh/hpmon.diff 
 # Some parts adapted from Debian's patch
-Patch1: 	nethack-enh-hpmon.patch
+#Patch1: 	nethack-enh-hpmon.patch
 # "Paranoid hit" patch by Joshua Kwan <joshk@triplehelix.org>
 # heavily edited from http://www.netsonic.fi/~walker/nh/paranoid-343.diff
 # originally by  David Damerell, Jonathan Nieder, Jukka Lahtinen, Stanislav
 # Traykov
 #
 # Adapted from its Debian version
-Patch2:		nethack-enh-paranoid-hit.patch
+#Patch2:		nethack-enh-paranoid-hit.patch
 #TODO: unfinished
-Patch3:		nethack-3.4.3-makefile-destdir.patch
+#Patch3:		nethack-3.4.3-makefile-destdir.patch
 BuildRequires:	ncurses-devel bison flex
 
 
@@ -41,10 +41,10 @@ characters: you can pick your race, your role, and your gender.
 
 %prep
 %setup -q
-%patch0 -p1 -b .settings~
-%patch1 -p1 -b .hpmon~
-%patch2 -p1 -b .paranoid~
-#%patch3 -p1 -b .destdir~
+#patch0 -p1 -b .settings~
+#patch1 -p1 -b .hpmon~
+#patch2 -p1 -b .paranoid~
+#patch3 -p1 -b .destdir~
 # Generates makefiles
 (source sys/unix/setup.sh)
 
