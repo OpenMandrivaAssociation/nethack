@@ -6,7 +6,7 @@ Summary:	A roguelike dungeon exploration game
 Group:		Games/Adventure
 License:	Nethack GPL
 URL:		http://www.nethack.org
-Source0:	http://downloads.sourceforge.net/%{name}/%{name}-361-src.tgz
+Source0:	http://downloads.sourceforge.net/%{name}/%{name}-364-src.tgz
 
 BuildRequires:  pkgconfig(ncurses)
 BuildRequires:  bison
