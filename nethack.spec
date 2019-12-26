@@ -51,10 +51,8 @@ Summary:         X11 core fonts configuration for %{fontname}
 Group:          System/Fonts/X11 bitmap
 BuildArch:      noarch
 Requires:        %{fontname}-fonts
-Requires(post):  %{fontname}-fonts
-Requires(post):  mkfontdir
-Requires(post):  coreutils
-Requires(preun): coreutils
+Requires:  mkfontdir
+Requires:  coreutils
 
 %description -n %{fontname}-fonts-core
 X11 core fonts configuration for %{fontname}.
