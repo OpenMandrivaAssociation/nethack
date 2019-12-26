@@ -37,6 +37,28 @@ provides an essentially unlimited number of variations of the dungeon
 and its denizens to be discovered by the player in one of a number of
 characters: you can pick your race, your role, and your gender.
 
+%package -n %{fontname}-fonts
+Summary:        Bitmap fonts for Nethack
+Group:          System/Fonts/X11 bitmap
+BuildArch:      noarch
+Requires:       fontpackages-filesystem
+
+%description -n %{fontname}-fonts
+Bitmap fonts for Nethack.
+
+%package -n %{fontname}-fonts-core
+Summary:         X11 core fonts configuration for %{fontname}
+Group:          System/Fonts/X11 bitmap
+BuildArch:      noarch
+Requires:        %{fontname}-fonts
+Requires(post):  %{fontname}-fonts
+Requires(post):  mkfontdir
+Requires(post):  coreutils
+Requires(preun): coreutils
+
+%description -n %{fontname}-fonts-core
+X11 core fonts configuration for %{fontname}.
+
 %prep
 %setup -q -n NetHack-NetHack-%{version}_Released
 #patch0 -p1 -b .makefile
