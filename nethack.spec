@@ -1,5 +1,5 @@
 Name:		nethack
-Version:	3.6.1
+Version:	3.6.4
 Release:	1
 Summary:	A roguelike dungeon exploration game
 
@@ -7,22 +7,20 @@ Group:		Games/Adventure
 License:	Nethack GPL
 URL:		http://www.nethack.org
 Source0:	http://downloads.sourceforge.net/%{name}/%{name}-361-src.tgz
-# Nethack Linux settings/defines
-#Patch0:		nethack-settings.patch
-# HP monitor, patch from http://www.netsonic.fi/~walker/nh/hpmon.diff 
-# Some parts adapted from Debian's patch
-#Patch1: 	nethack-enh-hpmon.patch
-# "Paranoid hit" patch by Joshua Kwan <joshk@triplehelix.org>
-# heavily edited from http://www.netsonic.fi/~walker/nh/paranoid-343.diff
-# originally by  David Damerell, Jonathan Nieder, Jukka Lahtinen, Stanislav
-# Traykov
-#
-# Adapted from its Debian version
-#Patch2:		nethack-enh-paranoid-hit.patch
-#TODO: unfinished
-#Patch3:		nethack-3.4.3-makefile-destdir.patch
-BuildRequires:	ncurses-devel bison flex
 
+BuildRequires:  pkgconfig(ncurses)
+BuildRequires:  bison
+BuildRequires:  flex
+BuildRequires:  desktop-file-utils
+BuildRequires:  bdftopcf
+BuildRequires:  mkfontdir
+BuildRequires:  pkgconfig(x11)
+BuildRequires:  pkgconfig(xaw7)
+BuildRequires:  pkgconfig(xext)
+BuildRequires:  pkgconfig(xmu)
+BuildRequires:  pkgconfig(xpm)
+BuildRequires:  pkgconfig(xt)
+BuildRequires:  fontpackages-devel
 
 %description
 NetHack is a single player dungeon exploration game that runs on a
@@ -40,50 +38,81 @@ and its denizens to be discovered by the player in one of a number of
 characters: you can pick your race, your role, and your gender.
 
 %prep
-%setup -q
-#patch0 -p1 -b .settings~
-#patch1 -p1 -b .hpmon~
-#patch2 -p1 -b .paranoid~
-#patch3 -p1 -b .destdir~
-# Generates makefiles
-(source sys/unix/setup.sh)
+%setup -q -n NetHack-NetHack-%{version}_Released
+#patch0 -p1 -b .makefile
+#patch1 -p1 -b .config
+#patch2 -p1 -b .MAK2
+#patch3 -p0 -b .guidebook
+
+perl -i -l -p -e 's{^#(PREFIX=/usr)\s*$}{$1}; s{^(PREFIX=\$\(wildcard.*)$}{# $1};' sys/unix/hints/linux-x11
+
+cd sys/unix
+sh setup.sh hints/linux-x11
 
 %build
-# Patch in our paths with RPM macros.
-perl -pi -e 's{MDV_HACKDIR}{%{_gamesdatadir}/nethack}' include/config.h
-perl -pi -e 's{MDV_VAR_PLAYGROUND}{%{_localstatedir}/lib/games/nethack}' include/unixconf.h
-%make CFLAGS="%{optflags} -I../include -Wno-error=format-security" LDFLAGS="%{ldflags}"
+make all
 
 %install
-%makeinstall_std \
-        GAMEDIR=%{buildroot}%{_gamesdatadir}/nethack \
-        VARDIR=%{buildroot}%{_localstatedir}/lib/games/nethack \
-        SHELLDIR=%{buildroot}%{_gamesbindir} \
-        CHOWN=/bin/true \
-        CHGRP=/bin/true
-rm -f %{buildroot}%{_gamesbindir}/nethack                                                                                                                     
-mv %{buildroot}%{_gamesdatadir}/nethack/nethack %{buildroot}%{_gamesbindir}/nethack                                                                           
-mv %{buildroot}%{_gamesdatadir}/nethack/recover %{buildroot}%{_gamesbindir}/nethack-recover                                                                   
-install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
+%make_install PREFIX=%{buildroot}/%{_prefix}
 
-%post
-%create_ghostfile %{_localstatedir}/lib/games/nethack/record root games 664
-%create_ghostfile %{_localstatedir}/lib/games/nethack/perm root games 664
-%create_ghostfile %{_localstatedir}/lib/games/nethack/logfile root games 664
+rm -rf $RPM_BUILD_ROOT%{nhgamedir}/save
+mkdir -p %{buildroot}%{_bindir}
+mv $RPM_BUILD_ROOT%{nhgamedir}/recover $RPM_BUILD_ROOT%{_bindir}/nethack-recover
+mv $RPM_BUILD_ROOT/usr/games/nethack $RPM_BUILD_ROOT%{_bindir}/nethack
+
+install -d -m 0755 $RPM_BUILD_ROOT%{_mandir}/man6
+make -C doc MANDIR=$RPM_BUILD_ROOT%{_mandir}/man6 manpages
+
+install -D -p -m 0644 win/X11/nh_icon.xpm \
+        $RPM_BUILD_ROOT%{_datadir}/pixmaps/nethack.xpm
+
+desktop-file-install \
+        --dir $RPM_BUILD_ROOT%{_datadir}/applications \
+        --add-category Game \
+        --add-category RolePlaying \
+        %{SOURCE1}
+
+# Install the fonts for the X11 interface
+cd win/X11
+bdftopcf -o nh10.pcf nh10.bdf
+bdftopcf -o ibm.pcf ibm.bdf
+install -m 0755 -d $RPM_BUILD_ROOT%{_fontdir}
+install -m 0644 -p *.pcf $RPM_BUILD_ROOT%{_fontdir}
+
+%{__sed} -i -e 's:^!\(NetHack.tile_file.*\):\1:' \
+        $RPM_BUILD_ROOT%{nhgamedir}/NetHack.ad
+
+
+%post -n %{fontname}-fonts-core
+mkfontdir %{_fontdir}
+if [ ! -L /etc/X11/fontpath.d/nethack ] ; then
+    ln -s %{_fontdir} /etc/X11/fontpath.d/nethack
+fi
+
+%preun -n %{fontname}-fonts-core
+if [ $1 -eq 0 ] ; then
+    rm /etc/X11/fontpath.d/nethack
+    rm %{_fontdir}/fonts.dir
+fi;
 
 %files
-%doc doc/*txt README dat/license
-%{_gamesdatadir}/nethack
+%doc doc/*.txt README dat/license dat/history
+%doc dat/opthelp dat/wizhelp
 %{_mandir}/man6/*
-%defattr(755,root,games)
-%{_gamesbindir}/nethack-recover
-%attr(2755,root,games) %{_gamesbindir}/nethack
-%defattr(644,root,games,775)
-%dir %{_localstatedir}/lib/games/nethack/
-%dir %{_localstatedir}/lib/games/nethack/save
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
+%{_datadir}/pixmaps/nethack.xpm
+%{_datadir}/applications/nethack.desktop
+%{_bindir}/nethack
+%{_bindir}/nethack-recover
+%{nhgamedir}
+%defattr(0664,root,games)
+%config(noreplace) %{nhgamedir}/record
+%config(noreplace) %{nhgamedir}/perm
+%config(noreplace) %{nhgamedir}/logfile
+%attr(2755,root,games) %{nhgamedir}/nethack
+
+%_font_pkg -n bitmap *.pcf
+
+%files -n %{fontname}-fonts-core
 
 
 %changelog
