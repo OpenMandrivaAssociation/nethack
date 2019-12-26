@@ -37,26 +37,6 @@ provides an essentially unlimited number of variations of the dungeon
 and its denizens to be discovered by the player in one of a number of
 characters: you can pick your race, your role, and your gender.
 
-%package -n %{fontname}-fonts
-Summary:        Bitmap fonts for Nethack
-Group:          System/Fonts/X11 bitmap
-BuildArch:      noarch
-Requires:       fontpackages-filesystem
-
-%description -n %{fontname}-fonts
-Bitmap fonts for Nethack.
-
-%package -n %{fontname}-fonts-core
-Summary:         X11 core fonts configuration for %{fontname}
-Group:          System/Fonts/X11 bitmap
-BuildArch:      noarch
-Requires:        %{fontname}-fonts
-Requires:  mkfontdir
-Requires:  coreutils
-
-%description -n %{fontname}-fonts-core
-X11 core fonts configuration for %{fontname}.
-
 %prep
 %setup -q -n NetHack-NetHack-%{version}_Released
 #patch0 -p1 -b .makefile
@@ -102,19 +82,6 @@ install -m 0644 -p *.pcf $RPM_BUILD_ROOT%{_fontdir}
 %{__sed} -i -e 's:^!\(NetHack.tile_file.*\):\1:' \
         $RPM_BUILD_ROOT%{nhgamedir}/NetHack.ad
 
-
-%post -n %{fontname}-fonts-core
-mkfontdir %{_fontdir}
-if [ ! -L /etc/X11/fontpath.d/nethack ] ; then
-    ln -s %{_fontdir} /etc/X11/fontpath.d/nethack
-fi
-
-%preun -n %{fontname}-fonts-core
-if [ $1 -eq 0 ] ; then
-    rm /etc/X11/fontpath.d/nethack
-    rm %{_fontdir}/fonts.dir
-fi;
-
 %files
 %doc doc/*.txt README dat/license dat/history
 %doc dat/opthelp dat/wizhelp
@@ -131,8 +98,6 @@ fi;
 %attr(2755,root,games) %{nhgamedir}/nethack
 
 %_font_pkg -n bitmap *.pcf
-
-%files -n %{fontname}-fonts-core
 
 
 %changelog
