@@ -5,7 +5,7 @@ Summary:	A roguelike dungeon exploration game
 
 Group:		Games/Adventure
 License:	Nethack GPL
-URL:		http://www.nethack.org
+URL:		https://www.nethack.org
 Source0:	http://downloads.sourceforge.net/%{name}/%{name}-343-src.tgz
 # Nethack Linux settings/defines
 Patch0:		nethack-settings.patch
