@@ -1,28 +1,33 @@
-Name:		nethack
-Version:	3.4.3
-Release:	3
-Summary:	A roguelike dungeon exploration game
+%global nhgamedir /usr/games/nethack
+%global nhdatadir /var/games/nethack
+ 
+%global fontname nethack-bitmap
 
+%bcond_with qt5
+
+%if %{with qt5}
+%global optflags %{optflags} -I%{_includedir}/qt5 -I%{_includedir}/qt5/QtCore -I%{_includedir}/qt5/QtWidgets
+%endif
+
+Name:		nethack
+Version:	3.6.7
+Release:	1
+Summary:	A roguelike dungeon exploration game
 Group:		Games/Adventure
 License:	Nethack GPL
 URL:		https://www.nethack.org
-Source0:	http://downloads.sourceforge.net/%{name}/%{name}-343-src.tgz
-# Nethack Linux settings/defines
-Patch0:		nethack-settings.patch
-# HP monitor, patch from http://www.netsonic.fi/~walker/nh/hpmon.diff 
-# Some parts adapted from Debian's patch
-Patch1: 	nethack-enh-hpmon.patch
-# "Paranoid hit" patch by Joshua Kwan <joshk@triplehelix.org>
-# heavily edited from http://www.netsonic.fi/~walker/nh/paranoid-343.diff
-# originally by  David Damerell, Jonathan Nieder, Jukka Lahtinen, Stanislav
-# Traykov
-#
-# Adapted from its Debian version
-Patch2:		nethack-enh-paranoid-hit.patch
-#TODO: unfinished
-Patch3:		nethack-3.4.3-makefile-destdir.patch
+Source0:	https://www.nethack.org/download/%{version}/nethack-%(echo %{version}|sed -e 's,\.,,g')-src.tgz
+Source1:	https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack.desktop
 BuildRequires:	ncurses-devel bison flex
 
+%patchlist
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-makefile.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-top.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-config.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-guidebook.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/hackdir.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-xpm.patch
+https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/modern_c.patch
 
 %description
 NetHack is a single player dungeon exploration game that runs on a
@@ -40,65 +45,98 @@ and its denizens to be discovered by the player in one of a number of
 characters: you can pick your race, your role, and your gender.
 
 %prep
-%setup -q
-%patch0 -p1 -b .settings~
-%patch1 -p1 -b .hpmon~
-%patch2 -p1 -b .paranoid~
-#%patch3 -p1 -b .destdir~
-# Generates makefiles
-(source sys/unix/setup.sh)
+%autosetup -p0 -n NetHack-%{version}
+%{__sed} -i -e "s:PREFIX=\$(wildcard ~)/nh/install:PREFIX=/usr:" sys/unix/hints/linux
+%{__sed} -i -e "s:^\(HACKDIR=\).*:\1%{nhgamedir}:" sys/unix/hints/linux
+
+%if %{with qt5}
+sh sys/unix/setup.sh sys/unix/hints/linux-qt5
+
+# Qt integration
+sed -i -e 's,.*define X11_GRAPHICS.*,// #define X11_GRAPHICS,g' include/config.h
+sed -i -e 's,.*define QT_GRAPHICS.*,#define QT_GRAPHICS,g' include/config.h
+sed -i -e 's,^WINSRC =.*,WINSRC = $(WINTTYSRC) $(WINQTSRC) $(WINCURSESSRC),' src/Makefile
+sed -i -e 's,^WINOBJ =.*,WINOBJ = $(WINTTYOBJ) $(WINQTOBJ) $(WINCURSESOBJ),' src/Makefile
+sed -i -e 's,^WINLIB =.*,WINLIB = $(WINTTYLIB) $(WINQT5LIB) $(WINCURSESLIB),' src/Makefile
+sed -i -e 's,^VARDATND =,VARDATND = x11tiles rip.xpm nhsplash.xpm ,' Makefile
+%else
+sh sys/unix/setup.sh sys/unix/hints/linux-x11
+%endif
+ 
+# Set our paths
+%{__sed} -i -e "s:^\(HACKDIR=\).*:\1%{nhgamedir}:" sys/unix/nethack.sh
+%{__sed} -i -e "s:FEDORA_CONFDIR:%{nhgamedir}:" sys/unix/nethack.sh
+%{__sed} -i -e "s:FEDORA_STATEDIR:%{nhdatadir}:" include/unixconf.h
+%{__sed} -i -e "s:FEDORA_HACKDIR:%{nhgamedir}:" include/config.h
+%{__sed} -i -e "s:/usr/games/lib/nethackdir:%{nhgamedir}:" \
+	doc/nethack.6 doc/nethack.txt doc/recover.6 doc/recover.txt
+ 
+# Point the linker in the right direction
+%{__sed} -i -e "s:-L/usr/X11R6/lib:-L/usr/X11R6/%{_lib}:" \
+	src/Makefile util/Makefile
+
 
 %build
-# Patch in our paths with RPM macros.
-perl -pi -e 's{MDV_HACKDIR}{%{_gamesdatadir}/nethack}' include/config.h
-perl -pi -e 's{MDV_VAR_PLAYGROUND}{%{_localstatedir}/lib/games/nethack}' include/unixconf.h
-%make CFLAGS="%{optflags} -I../include -Wno-error=format-security" LDFLAGS="%{ldflags}"
+make all
 
 %install
-%makeinstall_std \
-        GAMEDIR=%{buildroot}%{_gamesdatadir}/nethack \
-        VARDIR=%{buildroot}%{_localstatedir}/lib/games/nethack \
-        SHELLDIR=%{buildroot}%{_gamesbindir} \
-        CHOWN=/bin/true \
-        CHGRP=/bin/true
-rm -f %{buildroot}%{_gamesbindir}/nethack                                                                                                                     
-mv %{buildroot}%{_gamesdatadir}/nethack/nethack %{buildroot}%{_gamesbindir}/nethack                                                                           
-mv %{buildroot}%{_gamesdatadir}/nethack/recover %{buildroot}%{_gamesbindir}/nethack-recover                                                                   
-install -m644 doc/nethack.6 -D %{buildroot}%{_mandir}/man6/nethack.6
+%make_install \
+	PREFIX=$RPM_BUILD_ROOT \
+	HACKDIR=$RPM_BUILD_ROOT%{nhgamedir} \
+	GAMEDIR=$RPM_BUILD_ROOT%{nhgamedir} \
+	VARDIR=$RPM_BUILD_ROOT%{nhdatadir} \
+	SHELLDIR=$RPM_BUILD_ROOT%{_bindir} \
+	CHOWN=/bin/true \
+	CHGRP=/bin/true
+ 
+install -d -m 0755 $RPM_BUILD_ROOT%{_mandir}/man6
+make -C doc MANDIR=$RPM_BUILD_ROOT%{_mandir}/man6 manpages
 
-%post
-%create_ghostfile %{_localstatedir}/lib/games/nethack/record root games 664
-%create_ghostfile %{_localstatedir}/lib/games/nethack/perm root games 664
-%create_ghostfile %{_localstatedir}/lib/games/nethack/logfile root games 664
+install -D -p -m 0644 win/X11/nh_icon.xpm \
+	$RPM_BUILD_ROOT%{_datadir}/pixmaps/nethack.xpm
+
+desktop-file-install \
+	--dir $RPM_BUILD_ROOT%{_datadir}/applications \
+	--add-category Game \
+	--add-category RolePlaying \
+	%{S:1}
+ 
+# Install the fonts for the X11 interface
+cd win/X11
+bdftopcf -o nh10.pcf nh10.bdf
+bdftopcf -o ibm.pcf ibm.bdf
+install -m 0755 -d $RPM_BUILD_ROOT%{_fontdir}
+install -m 0644 -p *.pcf $RPM_BUILD_ROOT%{_fontdir}
+ 
+%{__sed} -i -e 's:^!\(NetHack.tile_file.*\):\1:' \
+	$RPM_BUILD_ROOT%{nhgamedir}/NetHack.ad
 
 %files
-%doc doc/*txt README dat/license
-%{_gamesdatadir}/nethack
+%doc doc/*.txt README dat/license dat/history
+%doc dat/opthelp dat/wizhelp
 %{_mandir}/man6/*
-%defattr(755,root,games)
-%{_gamesbindir}/nethack-recover
-%attr(2755,root,games) %{_gamesbindir}/nethack
-%defattr(644,root,games,775)
-%dir %{_localstatedir}/lib/games/nethack/
-%dir %{_localstatedir}/lib/games/nethack/save
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/record
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/perm
-%ghost %verify(not md5 size mtime) %{_localstatedir}/lib/games/nethack/logfile
-
-
-%changelog
-* Mon Sep 05 2011 Eskild Hustvedt <eskild@mandriva.org> 3.4.3-2
-+ Revision: 698365
-- Fixed creation of ghost files
-
-* Mon Sep 05 2011 Eskild Hustvedt <eskild@mandriva.org> 3.4.3-1
-+ Revision: 698342
-- Fixed save dir
-- Merged back Per ?\195?\152yvind's fixes
-- Various permission and build fixes. Added docs.
-- imported package nethack
-
-  + Per Øyvind Karlsen <peroyvind@mandriva.org>
-    - more fixes
-    - start on cleaning up and refreshing rusty/obsolete Eskild's packaging skills ;)
-
+%{_datadir}/pixmaps/nethack.xpm
+%{_datadir}/applications/nethack.desktop
+%{_bindir}/nethack
+%dir %{nhgamedir}
+%defattr(0664,root,games)
+%config(noreplace) %{nhdatadir}/record
+%config(noreplace) %{nhdatadir}/perm
+%config(noreplace) %{nhdatadir}/logfile
+%config(noreplace) %{nhdatadir}/xlogfile
+%attr(0775,root,games) %dir %{nhdatadir}
+%attr(0775,root,games) %dir %{nhdatadir}/save
+%attr(2755,root,games) %{nhgamedir}/nethack
+%config(noreplace) %{nhgamedir}/nhdat
+%config(noreplace) %{nhgamedir}/sysconf
+%config(noreplace) %{nhgamedir}/NetHack.ad
+%config(noreplace) %{nhgamedir}/license
+%config(noreplace) %{nhgamedir}/pet_mark.xbm
+%config(noreplace) %attr(0555,root,games) %{nhgamedir}/recover
+%config(noreplace) %{nhgamedir}/rip.xpm
+%config(noreplace) %{nhgamedir}/pilemark.xbm
+%config(noreplace) %{nhgamedir}/symbols
+%config(noreplace) %{nhgamedir}/x11tiles
+%{nhgamedir}/nh10.pcf
+%{nhgamedir}/fonts.dir
+%{_datadir}/fonts/nethack-bitmap

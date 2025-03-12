@@ -1,0 +1,58 @@
+--- include/config.h.orig	2019-05-13 10:47:48.545839681 -0500
++++ include/config.h	2019-05-13 15:46:04.080338820 -0500
+@@ -45,8 +45,8 @@
+ #if !defined(NOTTYGRAPHICS)
+ #define TTY_GRAPHICS /* good old tty based graphics */
+ #endif
+-/* #define CURSES_GRAPHICS *//* Curses interface - Karl Garrison*/
+-/* #define X11_GRAPHICS */   /* X11 interface */
++#define CURSES_GRAPHICS /* Curses interface - Karl Garrison*/
++#define X11_GRAPHICS   /* X11 interface */
+ /* #define QT_GRAPHICS */    /* Qt interface */
+ /* #define GNOME_GRAPHICS */ /* Gnome interface */
+ /* #define MSWIN_GRAPHICS */ /* Windows NT, CE, Graphics */
+@@ -263,11 +263,11 @@
+ 
+ #if defined(UNIX) && !defined(ZLIB_COMP) && !defined(COMPRESS)
+ /* path and file name extension for compression program */
+-#define COMPRESS "/usr/bin/compress" /* Lempel-Ziv compression */
+-#define COMPRESS_EXTENSION ".Z"      /* compress's extension */
++/* #define COMPRESS "/usr/bin/compress" */ /* Lempel-Ziv compression */
++/* #define COMPRESS_EXTENSION ".Z" */      /* compress's extension */
+ /* An example of one alternative you might want to use: */
+-/* #define COMPRESS "/usr/local/bin/gzip" */ /* FSF gzip compression */
+-/* #define COMPRESS_EXTENSION ".gz" */       /* normal gzip extension */
++#define COMPRESS "/usr/bin/gzip" /* FSF gzip compression */
++#define COMPRESS_EXTENSION ".gz"       /* normal gzip extension */
+ #endif
+ 
+ #ifndef COMPRESS
+@@ -311,7 +311,7 @@
+  *      a tar-like file, thus making a neater installation.  See *conf.h
+  *      for detailed configuration.
+  */
+-/* #define DLB */ /* not supported on all platforms */
++#define DLB /* not supported on all platforms */
+ 
+ /*
+  *      Defining REPRODUCIBLE_BUILD causes 'util/makedefs -v' to construct
+--- include/unixconf.h.orig	2019-05-13 10:48:00.595904458 -0500
++++ include/unixconf.h	2019-05-13 19:38:45.882219484 -0500
+@@ -106,7 +106,7 @@
+  * If you want the static parts of your playground on a read-only file
+  * system, define VAR_PLAYGROUND to be where the variable parts are kept.
+  */
+-/* #define VAR_PLAYGROUND "/var/lib/games/nethack" */
++#define VAR_PLAYGROUND "/var/games/nethack" 
+ 
+ /*
+  * Define DEF_PAGER as your default pager, e.g. "/bin/cat" or "/usr/ucb/more"
+@@ -133,7 +133,7 @@
+  * "extra output" method is used, but not all systems provide access to
+  * a fine-grained timer.
+  */
+-/* #define TIMED_DELAY */ /* usleep() */
++#define TIMED_DELAY /* usleep() */
+ #endif
+ #if defined(MACOSX) && !defined(TIMED_DELAY)
+ #define TIMED_DELAY

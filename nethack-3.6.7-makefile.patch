@@ -1,0 +1,99 @@
+--- sys/unix/Makefile.src.orig	2019-05-13 10:45:22.525054741 -0500
++++ sys/unix/Makefile.src	2019-05-13 15:54:05.290209398 -0500
+@@ -66,7 +66,7 @@
+ #	if you get setcgtty() warnings during execution, you are feeding gcc
+ #		a non-ANSI <sys/ioctl.h> -- either run fixincludes on it or use
+ #		-traditional in CFLAGS
+-# CC = gcc
++CC = gcc
+ #
+ #	For Bull DPX/2 systems at B.O.S. 2.0 or higher use the following:
+ #
+@@ -130,7 +130,8 @@
+ # flags for Linux
+ #   compile normally
+ # CFLAGS = -O2 -fomit-frame-pointer -I../include
+-# LFLAGS = -L/usr/X11R6/lib
++LFLAGS = -L/usr/X11R6/lib
++CFLAGS = -D__clang_minor__ -O2 -fomit-frame-pointer -I../include ${RPM_OPT_FLAGS}
+ #   OR compile backwards compatible a.out format
+ # CFLAGS = -O2 -b i486-linuxaout -fomit-frame-pointer -I../include
+ # LFLAGS = -b i486-linuxaout -L/usr/X11R6/lib
+@@ -267,12 +267,12 @@
+ #WINBEOBJ = winbe.o NHWindow.o NHMenuWindow.o NHMapWindow.o tile.o
+ #
+ #
+-#WINSRC = $(WINTTYSRC)
+-#WINOBJ = $(WINTTYOBJ)
++#WINSRC = $(WINTTYSRC) $(WINX11SRC)
++#WINOBJ = $(WINTTYOBJ) $(WINX11OBJ)
+ #
+ # Curses - Karl Garrison, Tangles
+-#WINSRC = $(WINCURSESSRC)
+-#WINOBJ = $(WINCURSESOBJ)
++WINSRC = $(WINTTYSRC) $(WINX11SRC) $(WINCURSESSRC)
++WINOBJ =  $(WINTTYOBJ) $(WINX11OBJ) $(WINCURSESOBJ)
+ #
+ # on some systems the termcap library is in -ltermcap or -lcurses
+ # on 386 Xenix, the -ltermlib tputs() seems not to work; use -lcurses instead
+@@ -287,12 +287,12 @@
+ # WINTTYLIB = -ltermcap
+ # WINTTYLIB = -lcurses
+ # WINTTYLIB = -lcurses16
+-# WINTTYLIB = -lncurses
++WINTTYLIB = -lncurses
+ #WINTTYLIB = -ltermlib
+ #
+ # libraries for X11
+ # If USE_XPM is defined in config.h, you will also need -lXpm here.
+-#WINX11LIB = -lXaw -lXmu -lXext -lXt -lX11
++WINX11LIB = -lXaw -lXmu -lXext -lXt -lXpm -lX11
+ # WINX11LIB = -lXaw -lXmu -lXt -lX11
+ # WINX11LIB = -lXaw -lXmu -lXext -lXt -lXpm -lX11 -lm
+ # WINX11LIB = -lXaw -lXmu -lXpm -lXext -lXt -lX11 -lSM -lICE -lm # BSD/OS 2.0
+@@ -327,7 +327,7 @@
+ # same as above, for XCurses
+ #WINCURSESLIB = -L/usr/local/lib/pdcurses -lXCurses -lXawM -lXmu -lXext -lXt -lX11
+ #
+-#WINLIB = $(WINTTYLIB)
++WINLIB = $(WINTTYLIB) $(WINX11LIB) 
+ #
+ # For Curses
+ #WINLIB = $(WINCURSESLIB)
+--- sys/unix/Makefile.utl.orig	2019-05-13 11:05:33.255674384 -0500
++++ sys/unix/Makefile.utl	2019-05-13 11:07:09.572212625 -0500
+@@ -20,7 +20,7 @@
+ 
+ # if you are using gcc as your compiler,
+ #	uncomment the CC definition below if it's not in your environment
+-# CC = gcc
++CC = gcc
+ #
+ #	For Bull DPX/2 systems at B.O.S. 2.0 or higher use the following:
+ #
+@@ -78,7 +78,8 @@
+ # flags for Linux
+ #   compile normally
+ # CFLAGS = -O2 -fomit-frame-pointer -I../include
+-# LFLAGS = -L/usr/X11R6/lib
++LFLAGS = -L/usr/X11R6/lib
++CFLAGS = -D__clang_minor__ -O2 -fomit-frame-pointer -I../include ${RPM_OPT_FLAGS}
+ #   OR compile backwards compatible a.out format
+ # CFLAGS = -O2 -b i486-linuxaout -fomit-frame-pointer -I../include
+ # LFLAGS = -b i486-linuxaout -L/usr/X11R6/lib
+@@ -111,11 +111,11 @@
+ 
+ # yacc/lex programs to use to generate *_comp.h, *_lex.c, and *_yacc.c.
+ # if, instead of yacc/lex you have bison/flex, comment/uncomment the following.
+-YACC     = yacc
+-LEX      = lex
+-# YACC     = bison -y
++# YACC     = yacc
++# LEX      = lex
++YACC     = bison -y
+ # YACC     = byacc
+-# LEX      = flex
++LEX      = flex
+ 
+ # these are the names of the output files from YACC/LEX. Under MS-DOS
+ # and similar systems, they may differ

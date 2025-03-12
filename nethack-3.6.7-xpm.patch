@@ -1,0 +1,11 @@
+--- include/config.h.orig	2022-07-02 08:16:35.484181081 -0700
++++ include/config.h	2022-07-02 08:17:35.554634170 -0700
+@@ -134,7 +134,7 @@
+  * would allow:
+  *  xpmtoppm <x11tiles.xpm | pnmscale 1.25 | ppmquant 90 >x11tiles_big.xpm
+  */
+-/* # define USE_XPM */ /* Disable if you do not have the XPM library */
++#define USE_XPM /* Disable if you do not have the XPM library */
+ #ifdef USE_XPM
+ #define GRAPHIC_TOMBSTONE /* Use graphical tombstone (rip.xpm) */
+ #endif
