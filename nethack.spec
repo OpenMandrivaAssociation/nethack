@@ -18,7 +18,7 @@ License:	Nethack GPL
 URL:		https://www.nethack.org
 Source0:	https://www.nethack.org/download/%{version}/nethack-%(echo %{version}|sed -e 's,\.,,g')-src.tgz
 Source1:	https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack.desktop
-BuildRequires:	ncurses-devel bison flex
+BuildRequires:	ncurses-devel bison flex xaw-devel bdftopcf
 
 %patchlist
 https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-makefile.patch
@@ -139,4 +139,3 @@ install -m 0644 -p *.pcf $RPM_BUILD_ROOT%{_fontdir}
 %config(noreplace) %{nhgamedir}/x11tiles
 %{nhgamedir}/nh10.pcf
 %{nhgamedir}/fonts.dir
-%{_datadir}/fonts/nethack-bitmap
