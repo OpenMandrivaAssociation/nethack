@@ -18,6 +18,7 @@ License:	Nethack GPL
 URL:		https://www.nethack.org
 Source0:	https://www.nethack.org/download/%{version}/nethack-%(echo %{version}|sed -e 's,\.,,g')-src.tgz
 Source1:	https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack.desktop
+BuildRequires:	make
 BuildRequires:	ncurses-devel bison flex xaw-devel bdftopcf util-linux mkfontscale
 
 %patchlist
