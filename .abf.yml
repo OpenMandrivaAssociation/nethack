@@ -1,3 +1,5 @@
 sources:
-  "nethack-343-src.tgz": c26537093c38152bc0fbcec20468d975b35f59fd
+  nethack-343-src.tgz": c26537093c38152bc0fbcec20468d975b35f59fd
   nethack-367-src.tgz: fa5b392da72736c8030cd3b6f226d0b4fa317518
+  nethack-500-src.tgz: e2d3cbf4eb0d66ec7c141bdb6a04c2b970526e7b
+  nethack.desktop: 2dc63e872a59dbc025cbf366d652f532cf803f86

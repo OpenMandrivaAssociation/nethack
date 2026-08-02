@@ -1,0 +1,20 @@
+--- sys/unix/Makefile.top
++++ sys/unix/Makefile.top
+@@ -30,7 +30,7 @@
+ 
+ #	Permissions - some places use setgid instead of setuid, for instance.
+ #	See also the option "SECURE" in include/config.h.
+-#GAMEPERM = 04755
++GAMEPERM = 02755
+ FILEPERM = 0644
+ # VARFILEPERM = 0644
+ EXEPERM  = 0755
+@@ -61,7 +61,7 @@
+ #	X11 without Qt:
+ # VARDATND = x11tiles NetHack.ad pet_mark.xbm pilemark.xbm
+ #	X11 with GRAPHIC_TOMBSTONE (requires 'xpm'):
+-# VARDATND = x11tiles NetHack.ad pet_mark.xbm pilemark.xbm rip.xpm
++VARDATND = x11tiles NetHack.ad pet_mark.xbm pilemark.xbm rip.xpm
+ #	both X11 and Qt:
+ # VARDATND = x11tiles nhtiles.bmp NetHack.ad pet_mark.xbm pilemark.xbm rip.xpm
+ #	Qt without X11; assumes GRAPHIC_TOMBSTONE:

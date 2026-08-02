@@ -10,7 +10,7 @@
 %endif
 
 Name:		nethack
-Version:	3.6.7
+Version:	5.0.0
 Release:	1
 Summary:	A roguelike dungeon exploration game
 Group:		Games/Adventure
@@ -22,13 +22,13 @@ BuildRequires:	make
 BuildRequires:	ncurses-devel bison flex xaw-devel bdftopcf util-linux mkfontscale
 
 %patchlist
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-makefile.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-top.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-config.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-guidebook.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/hackdir.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/nethack-3.6.7-xpm.patch
-https://src.fedoraproject.org/rpms/nethack/raw/rawhide/f/modern_c.patch
+nethack-5.0.0-makefile.patch
+nethack-5.0.0-top.patch
+nethack-5.0.0-config.patch
+nethack-5.0.0-guidebook.patch
+hackdir.patch
+nethack-5.0.0-xpm.patch
+modern_c.patch
 
 %description
 NetHack is a single player dungeon exploration game that runs on a
@@ -46,12 +46,12 @@ and its denizens to be discovered by the player in one of a number of
 characters: you can pick your race, your role, and your gender.
 
 %prep
-%autosetup -p0 -n NetHack-%{version}
-%{__sed} -i -e "s:PREFIX=\$(wildcard ~)/nh/install:PREFIX=/usr:" sys/unix/hints/linux
-%{__sed} -i -e "s:^\(HACKDIR=\).*:\1%{nhgamedir}:" sys/unix/hints/linux
+%autosetup -p0 -n NetHack-5.0.0
+%{__sed} -i -e "s:PREFIX=\$(wildcard ~)/nh/install:PREFIX=/usr:" sys/unix/hints/linux.500
+%{__sed} -i -e "s:^\(HACKDIR=\).*:\1%{nhgamedir}:" sys/unix/hints/linux.500
 
 %if %{with qt5}
-sh sys/unix/setup.sh sys/unix/hints/linux-qt5
+sh sys/unix/setup.sh sys/unix/hints/linux.500
 
 # Qt integration
 sed -i -e 's,.*define X11_GRAPHICS.*,// #define X11_GRAPHICS,g' include/config.h
@@ -61,7 +61,7 @@ sed -i -e 's,^WINOBJ =.*,WINOBJ = $(WINTTYOBJ) $(WINQTOBJ) $(WINCURSESOBJ),' src
 sed -i -e 's,^WINLIB =.*,WINLIB = $(WINTTYLIB) $(WINQT5LIB) $(WINCURSESLIB),' src/Makefile
 sed -i -e 's,^VARDATND =,VARDATND = x11tiles rip.xpm nhsplash.xpm ,' Makefile
 %else
-sh sys/unix/setup.sh sys/unix/hints/linux-x11
+sh sys/unix/setup.sh sys/unix/hints/linux.500
 %endif
  
 # Set our paths

@@ -1,0 +1,11 @@
+--- include/config.h
++++ include/config.h
+@@ -158,7 +158,7 @@
+  *  xpmtoppm <x11tiles.xpm | pnmscale 1.25 | ppmquant 90 | \
+  *      ppmtoxpm >x11tiles_big.xpm
+  */
+-/* # define USE_XPM */ /* Disable if you do not have the XPM library */
++#define USE_XPM /* Disable if you do not have the XPM library */
+ #ifdef USE_XPM
+ #ifndef GRAPHIC_TOMBSTONE
+ #define GRAPHIC_TOMBSTONE /* Use graphical tombstone (rip.xpm) */

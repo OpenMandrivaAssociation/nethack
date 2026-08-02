@@ -1,0 +1,11 @@
+--- sys/unix/Makefile.doc
++++ sys/unix/Makefile.doc
+@@ -38,7 +38,7 @@
+ # Single page. Might need adjustment to .pl value
+ # GUIDECMD= $(GUIDE_PREFORMAT) | perl -pe 's/^(.mt)$$/.pl 4720v\n.in 0\n.po 8\n.ll 64m\n$$1/' | nroff -c -Tascii | $(COLCMD)
+ #
+-GUIDECMD = $(GUIDE_PREFORMAT) | nroff -c -Tascii $(NROFF_FLAGS) | $(COLCMD)
++GUIDECMD = tbl tmac.n Guidebook.mn | nroff | $(COLCMD)
+ ONEPAGECMD = $(ONEPAGE_PREFORMAT) | nroff -c -Tascii $(NROFF_FLAGS) | $(COLCMD)
+ 
+ # Only generate output for the current configuration:
